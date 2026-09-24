@@ -1,0 +1,6 @@
+Model,CV balanced accuracy,Test accuracy,Test balanced accuracy,Test macro F1
+Dummy most frequent,0.125,0.283,0.125,
+kNN (k=7),0.82,0.889,0.837,
+Logistic regression,0.882,0.927,0.918,
+Decision tree,0.845,0.924,0.903,
+Random forest,0.906,0.981,0.974,0.976
