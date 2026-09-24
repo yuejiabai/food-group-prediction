@@ -1,21 +1,27 @@
-# Predicting Food Groups from Nutrient Profiles
+# Food Group Prediction from Nutrient Profiles
 
-A machine-learning project that predicts broad food classification groups from
-numerical nutrient composition data using the **Australian Food Composition Database**.
+A machine learning project exploring whether the nutritional composition of a
+food item can be used to predict its broad food classification group.
 
-The project focuses on the full tabular machine-learning workflow:
-problem formulation, leakage-aware feature selection, missing-data handling,
-class imbalance, model comparison, cross-validation, model interpretation, and
-careful evaluation.
+Using data from the **Australian Food Composition Database (AFCD)**, I built
+and compared several multi-class classification models and analysed both their
+predictive performance and the nutrient features contributing to their decisions.
 
-## Project Summary
+---
 
-The input to the model is a vector of numerical nutrient values for a food item.
-The target is a broad food group derived from the first two digits of the food
-classification code.
+## Project Overview
 
-To keep the experiment focused on nutrient composition rather than obvious text
-clues, food names and other label-related fields were excluded from the model inputs.
+The main research question was:
+
+> **Can the nutrient profile of a food item be used to predict its broad food classification group?**
+
+The task was formulated as a multi-class classification problem using numerical
+nutrient information only.
+
+To keep the experiment focused on nutrient composition, food names and other
+label-related fields were excluded from the model inputs. This prevents the model
+from relying on obvious textual clues such as "bread", "milk", or "beef" instead
+of learning patterns in the nutrient data.
 
 After preprocessing, the final dataset contained:
 
@@ -23,142 +29,216 @@ After preprocessing, the final dataset contained:
 - **90 numerical nutrient features**
 - **8 broad food groups**
 
-Food groups with fewer than 50 samples were removed to make evaluation more stable.
+---
 
-## Machine Learning Pipeline
+## Machine Learning Workflow
 
-The workflow included:
+The project follows a complete supervised machine learning pipeline:
 
-1. Constructing the broad multi-class target
-2. Removing label-leakage and administrative columns
-3. Retaining numerical nutrient variables
-4. Stratified train/test splitting
-5. Median imputation for missing values
-6. Standard scaling for scale-sensitive models
-7. 5-fold cross-validation on the training set
-8. Final evaluation on a held-out test set
-9. Random Forest feature-importance analysis
+1. Defined a broad food-group target from the food classification code
+2. Removed label-related and administrative fields
+3. Retained numerical nutrient features only
+4. Removed very small food groups for more stable evaluation
+5. Used a stratified train/test split
+6. Applied median imputation to missing nutrient values
+7. Standardised features for scale-sensitive models
+8. Compared multiple classification algorithms
+9. Used 5-fold cross-validation on the training set
+10. Evaluated the final models on a held-out test set
+11. Analysed Random Forest feature importance
 
-## Models Compared
+---
+
+## Models
+
+Five models were compared:
+
+- Dummy Classifier
+- k-Nearest Neighbours
+- Logistic Regression
+- Decision Tree
+- Random Forest
+
+These models were selected to compare simple baselines, linear models,
+distance-based methods, and non-linear tree-based approaches.
+
+---
+
+## Results
 
 | Model | CV Balanced Accuracy | Test Accuracy | Test Balanced Accuracy |
 |---|---:|---:|---:|
-| Dummy baseline | 0.125 | 0.283 | 0.125 |
+| Dummy Classifier | 0.125 | 0.283 | 0.125 |
 | kNN (k=7) | 0.820 | 0.889 | 0.837 |
 | Logistic Regression | 0.882 | 0.927 | 0.918 |
 | Decision Tree | 0.845 | 0.924 | 0.903 |
 | **Random Forest** | **0.906** | **0.981** | **0.974** |
 
-The **Random Forest** achieved the strongest final result:
+The **Random Forest** achieved the strongest overall performance:
 
-- **Test accuracy: 0.981**
-- **Test balanced accuracy: 0.974**
-- **Test macro F1: 0.976**
+- **Test Accuracy:** 0.981
+- **Test Balanced Accuracy:** 0.974
+- **Macro F1 Score:** 0.976
 
-Balanced accuracy was treated as a key metric because the food-group classes are
-not equally represented.
+Balanced accuracy and macro F1 were particularly important because the retained
+food groups were not equally represented.
+
+---
 
 ## Exploratory Data Analysis
 
 ### Class Distribution
 
-The retained food groups remain imbalanced, which motivates the use of balanced
-accuracy and macro-level metrics rather than relying only on ordinary accuracy.
+The selected food groups remain moderately imbalanced, which motivated the use
+of balanced accuracy rather than relying only on ordinary accuracy.
 
-![Class distribution](results/class_distribution.png)
+![Class Distribution](results/class_distribution.png)
 
-### Missing Nutrient Values
+### Missing Values
 
-Missingness varies substantially across nutrient features, so missing-value
-handling is included as part of the modelling pipeline.
+Some nutrient variables contain substantially more missing values than others.
 
-![Missing values](results/missing_values.png)
+Median imputation was used because nutrient measurements can contain large
+outliers, making the median less sensitive than the mean.
+
+![Missing Values](results/missing_values.png)
+
+---
 
 ## Model Comparison
 
-The comparison shows that all learned models substantially outperform the dummy
-baseline. Logistic Regression performs strongly, suggesting that some food groups
-are separable using relatively simple combinations of nutrient values, while the
-Random Forest provides the strongest overall performance.
+The comparison shows that all learned models perform substantially better than
+the dummy baseline.
 
-![Model comparison](results/model_comparison.png)
+Logistic Regression also performs strongly, suggesting that many broad food
+groups can be separated using relatively simple combinations of nutrient values.
+
+The Random Forest provides the best overall performance, suggesting that
+non-linear relationships and interactions between nutrient variables are also
+useful for classification.
+
+![Model Comparison](results/model_comparison.png)
+
+---
 
 ## Random Forest Evaluation
 
 ### Confusion Matrix
 
-Most predictions lie on the diagonal of the row-normalised confusion matrix,
-showing strong performance across the retained food groups rather than only on
-the largest classes.
+The row-normalised confusion matrix shows that most predictions fall on the
+diagonal, indicating strong performance across the different retained food groups.
 
-![Random forest confusion matrix](results/confusion_matrix.png)
+![Random Forest Confusion Matrix](results/confusion_matrix.png)
 
-### Feature Importance
+---
 
-The Random Forest relies on nutritionally meaningful variables including dietary
-fibre, starch, fatty-acid measurements, carbohydrate measures, nitrogen, selenium,
-iron, protein, and iodine.
+## Feature Importance
 
-![Random forest feature importance](results/feature_importance.png)
+Random Forest feature importance was used to investigate which nutrient variables
+contributed most strongly to the model.
 
-Feature importance is interpreted as evidence of predictive usefulness rather
-than a causal relationship between a nutrient and a food category.
+Important features included:
 
-## Data Leakage and Model Validity
+- Total dietary fibre
+- Starch
+- C22:6w3
+- Saturated fatty acids
+- Available carbohydrate
+- Long-chain omega-3 fatty acids
+- Nitrogen
+- Selenium
+- Monounsaturated fatty acids
+- Iron
+- Protein
+- Trans fatty acids
+- Iodine
 
-A key design decision was to exclude food names and detailed food descriptions.
-Using names such as *bread*, *milk*, *beef*, or *apple* could allow the classifier
-to infer the target from language rather than from nutrient composition.
+![Feature Importance](results/feature_importance.png)
 
-Removing these fields makes the task better aligned with the research question:
-**how much information about food group is contained in the numerical nutrient profile itself?**
+These variables are nutritionally meaningful and suggest that the classifier is
+using relevant nutrient information rather than arbitrary columns.
 
-## Why PCA Was Not Used
+Feature importance is interpreted as **predictive importance**, not as evidence
+of a causal relationship between a nutrient and a food category.
 
-PCA was considered as a dimensionality-reduction method but was not selected for
-the final modelling pipeline.
+---
+
+## Preventing Data Leakage
+
+One of the most important modelling decisions was excluding food names and
+detailed food descriptions.
+
+Using features such as:
+
+- bread
+- milk
+- beef
+- apple
+
+could allow the model to infer the target directly from language instead of
+learning from nutrient composition.
+
+Removing these fields makes the experiment better aligned with the research
+question and provides a more meaningful test of the nutrient features.
+
+---
+
+## PCA Consideration
+
+Principal Component Analysis (PCA) was considered as a dimensionality-reduction
+approach but was not used in the final models.
 
 The main reasons were:
 
-- 90 numerical features were still computationally manageable
-- PCA components would reduce interpretability because each component mixes many nutrients
-- the best-performing Random Forest can model non-linear interactions directly
+- The 90-feature dataset was still computationally manageable
+- PCA components would make nutrient-level interpretation more difficult
+- Random Forest can model non-linear interactions without requiring uncorrelated inputs
 
-For this project, retaining interpretable nutrient variables was more useful than
-compressing the feature space.
+For this project, interpretability was prioritised over reducing the number of
+features.
+
+---
 
 ## Limitations
 
-The reported results should be interpreted within the scope of the experiment.
+The results should be interpreted within the scope of the experiment.
 
-- Rare food groups with fewer than 50 samples were excluded.
-- The model predicts broad groups rather than detailed food categories.
-- Median imputation is a simple missing-data strategy.
-- Only a moderate set of models and hyperparameters was explored.
-- High performance is partly expected because food-group labels are naturally related to nutrient composition.
+- Food groups with fewer than 50 samples were excluded
+- The task predicts broad food groups rather than detailed food categories
+- Median imputation is a relatively simple missing-data strategy
+- Only a moderate number of models and hyperparameters were explored
+- The relationship between nutrient composition and food category is naturally strong, so high classification performance is expected
 
-Potential extensions include comparing alternative imputation methods, testing
-reduced-feature models, tuning model hyperparameters more extensively, and
-evaluating more detailed food categories.
+Future work could include:
+
+- Hyperparameter optimisation
+- Alternative missing-value strategies
+- Reduced-feature Random Forest models
+- More detailed food-category prediction
+- Comparison with additional ensemble or neural-network models
+
+---
 
 ## Technologies
 
 - Python
-- pandas
 - NumPy
+- pandas
 - scikit-learn
 - Matplotlib
 - Machine Learning
 - Multi-class Classification
-- Model Evaluation
+- Cross-validation
 - Feature Importance
+- Model Evaluation
+
+---
 
 ## Repository Structure
 
 ```text
-food-group-ml-portfolio/
+food-group-prediction/
 ├── README.md
-├── PROJECT_CONTEXT.md
 ├── methods/
 │   └── METHODS.md
 ├── report/
@@ -170,13 +250,3 @@ food-group-ml-portfolio/
     ├── confusion_matrix.png
     ├── feature_importance.png
     └── model_results.csv
-```
-
-## Project Context
-
-This project was developed as part of **COMP4702 Machine Learning**
-at **The University of Queensland**.
-
-The repository has been reorganised as a technical portfolio so that the
-problem definition, modelling decisions, evaluation results, and interpretation
-can be reviewed without relying on the original assignment structure.
